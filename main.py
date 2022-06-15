@@ -1,7 +1,7 @@
 import argparse
 import os
 import torch
-from model.image_classifier import  ImageClassifier
+from model.image_classifier import ImageClassifier, show_loss_acc
 
 
 def str2bool(v):
@@ -20,13 +20,8 @@ def parse_args():
     desc = "Pytorch implementation of GAN collections"
     parser = argparse.ArgumentParser(description=desc)
 
-    parser.add_argument('--is_train', type=str2bool, default=True)
     parser.add_argument('--epoch', type=int, default=50, help='The number of epochs to run')
     parser.add_argument('--batch_size', type=int, default=8, help='The size of batch')
-    parser.add_argument('--input_size', type=int, default=40, help='The size of input image')
-    parser.add_argument('--save_dir', type=str, default='models',
-                        help='Directory name to save the model')
-    parser.add_argument('--model_name', type=str, default='ImageClass', help='name your model')
     parser.add_argument('--transforms', type=str, default=None)
     parser.add_argument('--normalize', type=str2bool, default=True)
     parser.add_argument('--gpu_mode', type=str2bool, default=True)
@@ -37,10 +32,6 @@ def parse_args():
 
 """checking arguments"""
 def check_args(args):
-    # --save_dir
-    if not os.path.exists(args.save_dir):
-        os.makedirs(args.save_dir)
-
     # --epoch
     try:
         assert args.epoch >= 1
@@ -68,16 +59,10 @@ def main():
     # declare instance for GAN
     net = ImageClassifier(args)
 
-    if args.is_train:
-        net.train()
-        print(" [*] Training finished!")
+    model, loss_hist, metric_hist = net.train_val()
+    print(" [*] Training finished!")
 
-    else:
-        net.load()
-
-    # valid model
-    print(" [*] Testing finished!")
-
+    show_loss_acc(args.epoch, loss_hist, metric_hist)
 
 
 if __name__ == '__main__':
