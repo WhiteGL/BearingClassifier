@@ -1,7 +1,8 @@
 import argparse
-import os
 import torch
-from model.image_classifier import ImageClassifier, show_loss_acc
+from model.image_classifier import ImageClassifier
+from model.ts_classifier import TSClassifier
+from utils.utils import show_loss_acc
 
 
 def str2bool(v):
@@ -26,6 +27,7 @@ def parse_args():
     parser.add_argument('--normalize', type=str2bool, default=True)
     parser.add_argument('--gpu_mode', type=str2bool, default=True)
     parser.add_argument('--benchmark_mode', type=str2bool, default=True)
+    parser.add_argument('--model_name', type=str, default='Image')
 
     return check_args(parser.parse_args())
 
@@ -57,12 +59,15 @@ def main():
         torch.backends.cudnn.benchmark = True
 
     # declare instance for GAN
-    net = ImageClassifier(args)
+    if args.model_name == 'Image':
+        net = ImageClassifier(args)
+    elif args.model_name == 'TS':
+        net = TSClassifier(args)
 
     model, loss_hist, metric_hist = net.train_val()
     print(" [*] Training finished!")
 
-    show_loss_acc(args.epoch, loss_hist, metric_hist)
+    show_loss_acc(args.epoch, loss_hist, metric_hist, args.model_name)
 
 
 if __name__ == '__main__':
