@@ -71,7 +71,7 @@ class ImageClassifier(object):
             "initial_filters": 8,
             "num_fc1": 100,
             "dropout_rate": 0.25,
-            "num_classes": 2,
+            "num_classes": 4,
         }
 
         # 载入数据集
@@ -91,7 +91,7 @@ class ImageClassifier(object):
             "val_dl": self.val_loader,
             "sanity_check": True,
             "lr_scheduler": self.lr_scheduler,
-            "path2weights": "./models/bic/weights.pt",
+            "path2weights": "./models/Image/weights.pt",
         }
 
         if self.gpu_mode:
@@ -181,3 +181,23 @@ class ImageClassifier(object):
         model.load_state_dict(best_model_wts)
 
         return model, loss_history, metric_history
+
+    def test(self):
+        params = self.params_train
+        model = self.net
+        model.load_state_dict(torch.load(params["path2weights"]))
+        print("load model successful")
+        res = []
+        for xb, yb in self.val_loader:
+            xb = xb.to(self.device)
+            yb = yb.to(self.device)
+
+            xb = xb.unsqueeze(1)
+            yb = yb.long()
+
+            output = model(xb)
+            pred = output.argmax(dim=1, keepdim=True)
+
+            res.append([yb, pred])
+        print("prediction finished, saving result...")
+        np.save('./preds/Image/preds.npy', res)

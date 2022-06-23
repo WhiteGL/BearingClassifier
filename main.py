@@ -28,6 +28,7 @@ def parse_args():
     parser.add_argument('--gpu_mode', type=str2bool, default=True)
     parser.add_argument('--benchmark_mode', type=str2bool, default=True)
     parser.add_argument('--model_name', type=str, default='Image')
+    parser.add_argument('--test', type=str2bool, default=False)
 
     return check_args(parser.parse_args())
 
@@ -61,13 +62,15 @@ def main():
     # declare instance for GAN
     if args.model_name == 'Image':
         net = ImageClassifier(args)
-    elif args.model_name == 'TS':
+    else:
         net = TSClassifier(args)
 
-    model, loss_hist, metric_hist = net.train_val()
-    print(" [*] Training finished!")
-
-    show_loss_acc(args.epoch, loss_hist, metric_hist, args.model_name)
+    if args.test:
+        net.test()
+    else:
+        model, loss_hist, metric_hist = net.train_val()
+        print(" [*] Training finished!")
+        show_loss_acc(args.epoch, loss_hist, metric_hist, args.model_name)
 
 
 if __name__ == '__main__':
